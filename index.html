@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>маленький кинотеатр</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="./app/styles/main.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700,900&amp;subset=cyrillic" rel="stylesheet">
+    <script src="./utils/chooseEnding.js"></script>
+    <script src = "./utils/createMovieCard.js"></script>
+    <script src = "./utils/debounce.js"></script>
+    <script src = "./utils/removeChildren.js"></script>
+    <script src = "./utils/createPreloader.js"></script>
+    <script src="./app/Component.js"></script>
+    <script src="./app/Connector.js"></script>
+    <script src="./app/Model.js"></script>
+    <script src = "./app/init.js"></script>
+</head>
+
+<body>
+    <header class="logo">
+        <a href="#"><img class="logo__img" src="./app/imgs/logo—tp.svg" alt="tinkoff pokaz" width="148px"></a>
+    </header>
+    <main class="main">
+
+        <div class="search-box">
+
+            <input type="search" name="search" class="search-box__field" id = "search" placeholder="Поиск фильмов по жанрам и актерам">
+
+            <div class="clear"></div>
+
+            <div class="search-box__history">
+            </div>
+        </div>
+        <div class="results">
+            <!-- <h2 class = "results__info"></h2> -->
+        </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer__copyrights ">© 2019 Тинькофф Прокат</div>
+    </footer>
+
+    <script src="./index.js"></script>
+</body>
+
+</html>
