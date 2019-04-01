@@ -23,7 +23,7 @@ class Component{
 
     //client event handlers
     onSearch(){
-        const searchHandler = () => {
+        let searchHandler = () => {
             //empty search - do nothing
             if (this.search.value === '') return;
             //else send request data
@@ -39,7 +39,7 @@ class Component{
         /*
         изначально ограничивал поиск по инпуту вот так:
 
-        const searchHandler = debounce(searchHandler, 1000);
+        searchHandler = debounce(searchHandler, 1000);
 
         */ 
 

@@ -18,20 +18,16 @@ class Model{
     }
 
     setState(newState){
+        this.errorTimer&&clearTimeout(this.errorTimer);
+        console.log(newState);
+        this.connector.sendUpdates(newState);
+        this.state = Object.assign({}, this.state, newState);
+        if (!this.state.error){
 
-        const setState = (newState) => {
-            this.connector.sendUpdates(newState);
-            this.state = Object.assign({}, this.state, newState);
-            if (!this.state.error){
-
-                //requests with error aren't kept in localStorage
-                localStorage.clear();
-                localStorage.setItem('lastState', JSON.stringify(this.getState()));
-            }
+            //requests with error aren't kept in localStorage
+            localStorage.clear();
+            localStorage.setItem('lastState', JSON.stringify(this.getState()));
         }
-
-        setState(newState);
-
     }
 
     getState(){
@@ -46,21 +42,19 @@ class Model{
             //check cached requests first
             if (this.cache.has(request)) data = await this.cache.get(request);
             else {
-
+                this.lastRequest = request
                 /*пыталась таким образом отменять ненужные запросы,
                 которые присылаются по ходу ввода, но 
                 поиск получается какой-то дерганый :(*/
-                
-                    this.controller&&this.controller.abort();
+                this.controller&&this.controller.abort();
 
-                    this.controller = new AbortController();
-                    const signal = this.controller.signal;
+                this.controller = new AbortController();
+                const signal = this.controller.signal;
                 
                 //request general data about all movies
-                data = await fetch(`http://www.omdbapi.com/?type=movie&apikey=6d79ae60&s=${request}`, {signal})
+                data = await fetch(`http://www.omdbapi.com/?type=movie&apikey=dfe51d16&s=${this.lastRequest}`, {signal})
                             .then( res => {
-                                console.log(request);
-                                this.controller = null;
+                                this.controller, this.lastRequest = null;
                                 return res.json()
                             })
                             .catch(err => {
@@ -75,8 +69,9 @@ class Model{
                 }
 
                 //request additional data(genre, rating, etc)
+                
                 data = await this.getFullData(data);
-
+            
                 this.cache.set(request, data);
             }
 
@@ -105,7 +100,7 @@ class Model{
     async getFullData(data){
         let counter = 0;
         for (let movie of data.Search){
-            data.Search[counter++] = await fetch(`http://www.omdbapi.com/?apikey=6d79ae60&t=${movie.Title}`).then(res => res.json());
+            data.Search[counter++] = await fetch(`http://www.omdbapi.com/?apikey=dfe51d16&t=${movie.Title}`).then(res => res.json());
         }
         return data;
     }
