@@ -17,7 +17,8 @@ class Model{
         }
     }
 
-    setState(newState, delay=0){
+    setState(newState){
+
         const setState = (newState) => {
             this.connector.sendUpdates(newState);
             this.state = Object.assign({}, this.state, newState);
@@ -29,12 +30,8 @@ class Model{
             }
         }
 
-        this.timer&&clearTimeout(this.timer);
+        setState(newState);
 
-        this.timer = setTimeout(() => {
-            setState(newState);
-            this.timer = null;
-        }, delay)
     }
 
     getState(){
@@ -51,16 +48,16 @@ class Model{
             else {
 
                 /*пыталась таким образом отменять ненужные запросы,
-                которые присылаются по ходу ввода, но тогда 
-                поиск получался какой-то дерганый :(
+                которые присылаются по ходу ввода, но 
+                поиск получается какой-то дерганый :(*/
                 
                     this.controller&&this.controller.abort();
 
                     this.controller = new AbortController();
                     const signal = this.controller.signal;
-
-                //request general data about all movies*/
-                data = await fetch(`http://www.omdbapi.com/?type=movie&apikey=6d79ae60&s=${request}`)
+                
+                //request general data about all movies
+                data = await fetch(`http://www.omdbapi.com/?type=movie&apikey=6d79ae60&s=${request}`, {signal})
                             .then( res => {
                                 console.log(request);
                                 this.controller = null;
@@ -70,12 +67,12 @@ class Model{
                                 if (err.name !== 'AbortError') console.log(err.message);
                             });
 
-                /*check if aborted
+                //check if aborted
                 if (signal.aborted){
                     this.controller = null;
                     console.log(`aborted ${request}`)
                     return;
-                }*/
+                }
 
                 //request additional data(genre, rating, etc)
                 data = await this.getFullData(data);
@@ -98,10 +95,10 @@ class Model{
                 error:false
             };
 
-            this.setState(newState, 1000);
+            this.setState(newState);
 
         } catch (err) {
-            this.setState({error: true}, 2000);
+            this.setState({error: true});
         }
     }
 

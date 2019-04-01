@@ -36,6 +36,13 @@ class Component{
             }
         };
 
+        /*
+        изначально ограничивал поиск по инпуту вот так:
+
+        const searchHandler = debounce(searchHandler, 1000);
+
+        */ 
+
         this.search.addEventListener('focus', () => this.el.classList.add('search_active'));
         this.search.addEventListener('blur', () => {
             if (this.search.value !== '') return;
