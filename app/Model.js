@@ -18,8 +18,7 @@ class Model{
     }
 
     setState(newState){
-        this.errorTimer&&clearTimeout(this.errorTimer);
-        console.log(newState);
+        
         this.connector.sendUpdates(newState);
         this.state = Object.assign({}, this.state, newState);
         if (!this.state.error){
