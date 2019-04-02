@@ -30,7 +30,7 @@ class Component{
             this.connector.notify({event: 'search', data: this.search.value.toLowerCase()});
 
             //search has just started
-            if (!this.results.querySelector('.preloader')){
+            if (this.results.firstElementChild.className!=='preloader'){
                 removeChildren(this.results);
                 this.results.appendChild(createPreloader());
             }
@@ -59,6 +59,7 @@ class Component{
         const tagClickHandler = (e) => {
             e.preventDefault();
             if (!e.target.classList.contains('history-item')) return;
+            if (e.target === this.history.firstElementChild) return;
             //alt+click = delete tag
             if (e.altKey) this.connector.notify({event: 'remove_tag', data: e.target.dataset.movie});
             //only click = search 
