@@ -28,12 +28,6 @@ class Component{
             if (this.search.value === '') return;
             //else send request data
             this.connector.notify({event: 'search', data: this.search.value.toLowerCase()});
-
-            //search has just started
-            if (this.results.firstElementChild.className!=='preloader'){
-                removeChildren(this.results);
-                this.results.appendChild(createPreloader());
-            }
         };
 
         /*
@@ -101,6 +95,13 @@ class Component{
     }
 
     //update renderes
+
+    showPreloader(){
+        if (!this.results.querySelector('.preloader')){
+            removeChildren(this.results);
+            this.results.appendChild(createPreloader());
+        }
+    }
 
     renderCards(moviesData){
         const container = document.createDocumentFragment();

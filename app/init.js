@@ -6,6 +6,8 @@ function init(){
     connector.bindAction({event: 'search', handler: model.getMoviesData});
     connector.bindAction({event: 'remove_tag', handler: model.removeTag});
 
+    connector.subscribe({update: 'loading', context: mainComponent, handler: mainComponent.showPreloader});
+
     connector.subscribe({update: 'tags', context: mainComponent, handler: mainComponent.renderTags});
     connector.subscribe({update: 'moviesData', context: mainComponent, handler: mainComponent.renderCards});
     connector.subscribe({update: 'counts', context: mainComponent, handler: mainComponent.renderResultsHeader});

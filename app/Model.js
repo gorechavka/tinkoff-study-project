@@ -35,6 +35,10 @@ class Model{
     }
 
     async getMoviesData(request) {
+
+        //tells component to show preloader
+        this.setState({loading: true});
+
         const curState = this.getState();
         let data;
 
@@ -87,7 +91,8 @@ class Model{
                     link: `https://www.imdb.com/title/${movie.imdbID}`,
                     rate: movie.imdbRating
                 })),
-                error:false
+                error:false,
+                loading:false
             };
 
             this.setState(newState);
