@@ -43,7 +43,7 @@ class Component{
             this.el.classList.remove('search_active')
         });
 
-        this.search.addEventListener('input', searchHandler.bind(this));
+        this.search.addEventListener('input', searchHandler);
         this.search.addEventListener('submit', e => e.preventDefault());
 
 
@@ -57,10 +57,13 @@ class Component{
             //alt+click = delete tag
             if (e.altKey) this.connector.notify({event: 'remove_tag', data: e.target.dataset.movie});
             //only click = search 
-            else this.connector.notify({event: 'search', data: e.target.dataset.movie});
+            else {
+                this.connector.notify({event: 'search', data: e.target.dataset.movie});
+                this.search.value = e.target.dataset.movie
+            }
         }
         
-        this.history.addEventListener('click', tagClickHandler.bind(this));
+        this.history.addEventListener('click', tagClickHandler);
     }
 
     onScroll(){
@@ -72,7 +75,7 @@ class Component{
             }
         }
 
-        window.addEventListener('scroll', scrollHandler.bind(this));
+        window.addEventListener('scroll', scrollHandler);
     }
 
     onKeyDown(){
@@ -82,7 +85,7 @@ class Component{
             this.search.focus();
         }
 
-        document.addEventListener('keydown', keyDownHandler.bind(this));
+        document.addEventListener('keydown', keyDownHandler);
     }
 
     onClear(){
@@ -91,23 +94,32 @@ class Component{
             this.search.value = '';
         }
 
-        this.el.querySelector('.clear').addEventListener('click', clearButtonHandler.bind(this));
+        this.el.querySelector('.clear').addEventListener('click', clearButtonHandler);
     }
 
     //update renderes
 
     showPreloader(){
-        if (!this.results.querySelector('.preloader')){
+        if (!this.preloader){
             removeChildren(this.results);
-            this.results.appendChild(createPreloader());
+            this.preloader = createPreloader();
+            this.results.appendChild(this.preloader);
+        }
+    }
+
+    hidePreloader(){
+        if (this.preloader) {
+            this.preloader.remove();
+            this.preloader = null;
         }
     }
 
     renderCards(moviesData){
         const container = document.createDocumentFragment();
 
-        const cardsContainer = document.createElement('div');
-        cardsContainer.classList.add('results__wrapper');
+        if (this.cardsContainer) this.cardsContainer.remove();
+        this.cardsContainer = document.createElement('div');
+        this.cardsContainer.classList.add('results__wrapper');
 
         moviesData.forEach(movie => {
             //custom element - see createMovieCard.js
@@ -120,20 +132,22 @@ class Component{
             movieCard.genre = movie.genre;
             movieCard.rate = movie.rate;
 
-            cardsContainer.appendChild(movieCard);
+            this.cardsContainer.appendChild(movieCard);
         });
-        container.appendChild(cardsContainer);
+        container.appendChild(this.cardsContainer);
 
-        removeChildren(this.results);
+        this.hidePreloader();
+
         this.results.appendChild(container);
 
     }
 
     renderResultsHeader(counts){
-        const header = document.createElement('h2');
-        header.classList.add('results__info');
-        header.textContent = `Нашли ${counts} ${chooseEnding(counts)}`;
-        this.results.insertBefore(header, this.results.firstElementChild);
+        if (this.header) this.header.remove();
+        this.header = document.createElement('h2');
+        this.header.classList.add('results__info');
+        this.header.textContent = `Нашли ${counts} ${chooseEnding(counts)}`;
+        this.results.insertBefore(this.header, this.results.firstElementChild);
     }
 
     renderTags(tags){
@@ -157,10 +171,11 @@ class Component{
 
         removeChildren(this.results); 
         if (this.search.value === '') return;
-        
-        const header = document.createElement('h2');
-        header.classList.add('results__info');
-        header.textContent = `Мы не поняли о чем речь ¯\_(ツ)_/¯`;
-        this.results.appendChild(header);
+
+        if (this.header) this.header.remove();
+        this.header = document.createElement('h2');
+        this.header.classList.add('results__info');
+        this.header.textContent = `Мы не поняли о чем речь ¯\_(ツ)_/¯`;
+        this.results.appendChild(this.header);
     }
 }
