@@ -1,19 +1,17 @@
 function init(){
-    const model = new Model()
-    const connector = new Connector(model);
-    const mainComponent = new Component();
+    const model = createModel();
+    const connector = createConnector(model);
+    const component = createComponent(connector);
 
     connector.bindAction({event: 'search', handler: model.getMoviesData});
     connector.bindAction({event: 'remove_tag', handler: model.removeTag});
 
-    connector.subscribe({update: 'loading', context: mainComponent, handler: mainComponent.showPreloader});
+    connector.subscribe({update: 'loading', handler: component.showPreloader});
 
-    connector.subscribe({update: 'tags', context: mainComponent, handler: mainComponent.renderTags});
-    connector.subscribe({update: 'moviesData', context: mainComponent, handler: mainComponent.renderCards});
-    connector.subscribe({update: 'counts', context: mainComponent, handler: mainComponent.renderResultsHeader});
-    connector.subscribe({update: 'error', context: mainComponent, handler: mainComponent.renderError});
+    connector.subscribe({update: 'tags', handler: component.renderTags});
+    connector.subscribe({update: 'moviesData', handler: component.renderCards});
+    connector.subscribe({update: 'counts', handler: component.renderResultsHeader});
+    connector.subscribe({update: 'error', handler: component.renderError});
 
-    mainComponent.init(connector);
-    model.init(connector);
-
+    connector.init();
 }

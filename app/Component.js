@@ -1,33 +1,26 @@
-class Component{
-    constructor(){
-        this.el = document.querySelector('.main');
-        this.search = document.getElementById('search');
-        this.history = document.querySelector('.search-box__history');
-        this.results = document.querySelector('.results');
+function createComponent(connector){
+    
+    let el = document.querySelector('.main'),
+        search = document.getElementById('search'),
+        history = document.querySelector('.search-box__history'),
+        results = document.querySelector('.results'),
+        eventHandlers = [onSearch, onScroll, onTagClick, onKeyDown, onClear],
+        preloader = null,
+        cardsContainer = null,
+        header = null;
+    
+    function init(){
+        initEvents();
     }
 
-    init(connector){
-        //init inner eventListeners
-        this.initEvents();
-        this.connector = connector;
-
+    function initEvents(){
+        eventHandlers.forEach( handler => handler());
     }
 
-    initEvents(){
-        this.getEventHandlers().forEach( handler => handler.call(this));
-    }
-
-    getEventHandlers(){
-        return [this.onScroll, this.onSearch, this.onTagClick, this.onKeyDown, this.onClear]
-    }
-
-    //client event handlers
-    onSearch(){
+    function onSearch(){
         let searchHandler = () => {
-            //empty search - do nothing
-            if (this.search.value === '') return;
-            //else send request data
-            this.connector.notify({event: 'search', data: this.search.value.toLowerCase()});
+            if (search.value === '') return;
+            connector.notify({event: 'search', data: search.value});
         };
 
         /*
@@ -37,145 +30,164 @@ class Component{
 
         */ 
 
-        this.search.addEventListener('focus', () => this.el.classList.add('search_active'));
-        this.search.addEventListener('blur', () => {
-            if (this.search.value !== '') return;
-            this.el.classList.remove('search_active')
+        search.addEventListener('focus', () => el.classList.add('search_active'));
+        search.addEventListener('blur', () => {
+            if (search.value !== '') return;
+            el.classList.remove('search_active');
         });
 
-        this.search.addEventListener('input', searchHandler);
-        this.search.addEventListener('submit', e => e.preventDefault());
+        search.addEventListener('input', searchHandler);
+        search.addEventListener('submit', e => e.preventDefault());
 
 
     }
 
-    onTagClick(){
+    function onTagClick(){
         const tagClickHandler = (e) => {
             e.preventDefault();
             if (!e.target.classList.contains('history-item')) return;
-            if (e.target === this.history.firstElementChild) return;
-            //alt+click = delete tag
-            if (e.altKey) this.connector.notify({event: 'remove_tag', data: e.target.dataset.movie});
-            //only click = search 
+
+            if (e.altKey) connector.notify({event: 'remove_tag', data: e.target.dataset.movie});
             else {
-                this.connector.notify({event: 'search', data: e.target.dataset.movie});
-                this.search.value = e.target.dataset.movie
+                if (e.target === history.firstElementChild) return;
+                connector.notify({event: 'search', data: e.target.dataset.movie});
+                search.value = e.target.dataset.movie
             }
         }
         
-        this.history.addEventListener('click', tagClickHandler);
+        history.addEventListener('click', tagClickHandler);
+        history.addEventListener('doubleclick', e => e.preventDefault());
     }
 
-    onScroll(){
+    function onScroll(){
         const scrollHandler = () => {
-            if (window.pageYOffset > this.search.getBoundingClientRect().bottom) {
-                if (!this.el.classList.contains('scroll')) this.el.classList.add('scroll');
+            if (window.pageYOffset > search.getBoundingClientRect().bottom) {
+                if (!el.classList.contains('scroll')) el.classList.add('scroll');
             } else {
-                this.el.classList.remove('scroll');
+                el.classList.remove('scroll');
             }
         }
 
         window.addEventListener('scroll', scrollHandler);
     }
 
-    onKeyDown(){
-        //automatic focus on input when push any key
+    function onKeyDown(){
         const keyDownHandler = (e) => {
             if (e.keyCode < 32) return;
-            this.search.focus();
+            search.focus();
         }
 
         document.addEventListener('keydown', keyDownHandler);
     }
 
-    onClear(){
+    function onClear() {
         const clearButtonHandler = () => {
-            this.search.focus();
-            this.search.value = '';
+            search.focus();
+            search.value = '';
         }
 
-        this.el.querySelector('.clear').addEventListener('click', clearButtonHandler);
+        el.querySelector('.clear').addEventListener('click', clearButtonHandler);
     }
 
-    //update renderes
+    //functions to render request data
 
-    showPreloader(){
-        if (!this.preloader){
-            removeChildren(this.results);
-            this.preloader = createPreloader();
-            this.results.appendChild(this.preloader);
-        }
-    }
-
-    hidePreloader(){
-        if (this.preloader) {
-            this.preloader.remove();
-            this.preloader = null;
+    function showPreloader(){
+        if (!preloader){
+            removeChildren(results);
+            preloader = createPreloader();
+            results.appendChild(preloader);
         }
     }
 
-    renderCards(moviesData){
+    function hidePreloader(){
+        if (preloader) {
+            preloader.remove();
+            preloader = null;
+        }
+    }
+
+    function renderCards(moviesData){
         const container = document.createDocumentFragment();
 
-        if (this.cardsContainer) this.cardsContainer.remove();
-        this.cardsContainer = document.createElement('div');
-        this.cardsContainer.classList.add('results__wrapper');
+        if (cardsContainer) cardsContainer.remove();
+        
+        cardsContainer = document.createElement('div');
+        cardsContainer.classList.add('results__wrapper');
 
         moviesData.forEach(movie => {
-            //custom element - see createMovieCard.js
-            const movieCard = document.createElement('movie-card');
-
-            movieCard.title = movie.title;
-            movieCard.link = movie.link;
-            movieCard.poster = movie.poster;
-            movieCard.year = movie.year;
-            movieCard.genre = movie.genre;
-            movieCard.rate = movie.rate;
-
-            this.cardsContainer.appendChild(movieCard);
+            cardsContainer.appendChild(createCard(movie));
         });
-        container.appendChild(this.cardsContainer);
+        container.appendChild(cardsContainer);
 
-        this.hidePreloader();
+        hidePreloader();
 
-        this.results.appendChild(container);
-
+        results.appendChild(container);
     }
 
-    renderResultsHeader(counts){
-        if (this.header) this.header.remove();
-        this.header = document.createElement('h2');
-        this.header.classList.add('results__info');
-        this.header.textContent = `Нашли ${counts} ${chooseEnding(counts)}`;
-        this.results.insertBefore(this.header, this.results.firstElementChild);
+    function renderResultsHeader(counts) {
+        if (header) header.remove();
+        header = document.createElement('h2');
+        header.classList.add('results__info');
+        header.textContent = `Нашли ${counts} ${chooseEnding(counts)}`;
+        results.insertBefore(header, results.firstElementChild);
     }
 
-    renderTags(tags){
-        removeChildren(this.history);
+    function renderTags(tags){
+        removeChildren(history);
         const tagsContainer = document.createDocumentFragment();
         tags.forEach( tag => {
-            const newTag = document.createElement('a');
-            newTag.classList.add('history-item');
-            newTag.href = `/?search=${tag}`;
-            newTag.target = '_blank';
-            newTag.textContent = tag;
-            newTag.dataset.movie = tag;
-            tagsContainer.appendChild(newTag);
+            tagsContainer.appendChild(createTag(tag));
         })
-        this.history.appendChild(tagsContainer);
+        history.appendChild(tagsContainer);
     }
 
-    //when nothing found
-    renderError(error){
+    function renderError(error){
         if (!error) return;
 
-        removeChildren(this.results); 
-        if (this.search.value === '') return;
+        removeChildren(results); 
+        hidePreloader();
 
-        if (this.header) this.header.remove();
-        this.header = document.createElement('h2');
-        this.header.classList.add('results__info');
-        this.header.textContent = `Мы не поняли о чем речь ¯\_(ツ)_/¯`;
-        this.results.appendChild(this.header);
+        if (search.value === '') return;
+
+        if (header) header.remove();
+        header = document.createElement('h2');
+        header.classList.add('results__info');
+        header.textContent = `Мы не поняли о чем речь ¯\_(ツ)_/¯`;
+        results.appendChild(header);
+    }
+
+
+    function createCard (cardData){
+        const movieCard = document.createElement('movie-card');
+        movieCard.title = cardData.title;
+        movieCard.link = cardData.link;
+        movieCard.poster = cardData.poster;
+        movieCard.year = cardData.year;
+        movieCard.genre = cardData.genre;
+        movieCard.rate = cardData.rate;
+
+        return movieCard;
+    }
+
+    function createTag(tag){
+        const newTag = document.createElement('a');
+        newTag.classList.add('history-item');
+        newTag.href = `/?search=${tag}`;
+        newTag.target = '_blank';
+        newTag.textContent = tag;
+        newTag.dataset.movie = tag;
+        return newTag;
+    }
+
+    
+    init();
+
+    return {
+        showPreloader,
+        hidePreloader,
+        renderCards,
+        renderResultsHeader,
+        renderTags,
+        renderError
     }
 }

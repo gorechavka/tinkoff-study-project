@@ -1,37 +1,42 @@
-class Connector{
-    constructor(model){
-        this.actions = {};
-        this.subscribers = {};
-        this.model = model;
+function createConnector(model){
+    let actions = {},
+        subscribers = {};
+
+    function init(){
+        model.addListener(update);
+        model.init()
     }
 
-    //subscription on data updates
-    subscribe({update, context, handler}){
-        if (!this.subscribers[update]) this.subscribers[update] =  [];
-        this.subscribers[update].push({
+    function subscribe({update, handler}){
+        if (!subscribers[update]) subscribers[update] =  [];
+        subscribers[update].push({
             update,
-            context,
             handler
         });
     }
 
-    //bind actions with data to some user events
-    bindAction({event, handler}){
-        this.actions[event] = handler.bind(this.model);
+    function bindAction({event, handler}){
+        actions[event] = handler;
     }
 
-    //trigger binded actions for corresponding events
-    notify({event, data}){
-        this.actions[event](data);
+    function notify({event, data}){
+        actions[event](normalize(data));
     }
 
-    //trigger handlers, subscribed to corresponding data updates
-    sendUpdates(nextState){
-        for (let change in nextState){
-            if (nextState[change]) {
-                this.subscribers[change].forEach( s => s.handler.call(s.context, nextState[change]));
+    function update(newState){
+        for (let change in newState) {
+            if (newState[change]) {
+                subscribers[change].forEach( s => s.handler(newState[change]));
             }
         }
     }
-}
 
+    return {
+        init,
+        subscribe,
+        bindAction,
+        notify,
+        update
+    }
+
+}

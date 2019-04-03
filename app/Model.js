@@ -1,15 +1,14 @@
-class Model{
-    constructor(){
-        this.state = {};
-        this.cache = new Map();
-    }
+function createModel(){
+    state = {};
+    listeners = [];
+    cache = new Map(),
+    controller = null,
+    lastRequest = null;
 
-    init(connector){
-        this.connector = connector;
-
-        //check last saved state
-        if (localStorage.getItem('lastState')) this.setState(JSON.parse(localStorage.getItem('lastState')));
-        else this.state = {
+    function init(){
+        if (localStorage.getItem('lastState')) {
+            setState(JSON.parse(localStorage.getItem('lastState')));
+        } else state = {
             tags:[],
             counts: 0,
             moviesData: [],
@@ -17,65 +16,62 @@ class Model{
         }
     }
 
-    setState(newState){
-        
-        this.connector.sendUpdates(newState);
-        this.state = Object.assign({}, this.state, newState);
-        if (!this.state.error){
+    function addListener(listener){
+        listeners.push(listener);
+    }
 
-            //requests with error aren't kept in localStorage
+    function setState(newState){
+     
+        listeners.forEach( listener => listener(newState));
+
+        state = Object.assign({}, state, newState);
+        if (!state.error && !state.loading){
+
+            
             localStorage.clear();
-            localStorage.setItem('lastState', JSON.stringify(this.getState()));
+            localStorage.setItem('lastState', JSON.stringify(getState()));
         }
     }
 
-    getState(){
-        return this.state;
+    function getState(){
+        return state;
     }
 
-    async getMoviesData(request) {
+    async function getMoviesData(request) {
 
-        //tells component to show preloader
-        this.setState({loading: true});
+        setState({loading: true});
 
-        const curState = this.getState();
+        const curState = getState();
         let data;
 
         try {
-            //check cached requests first
-            if (this.cache.has(request)) data = await this.cache.get(request);
+            if (cache.has(request)) data = await cache.get(request);
             else {
-                this.lastRequest = request
-                /*пыталась таким образом отменять ненужные запросы,
-                которые присылаются по ходу ввода, но 
-                поиск получается какой-то дерганый :(*/
-                this.controller&&this.controller.abort();
+                lastRequest = request;
 
-                this.controller = new AbortController();
-                const signal = this.controller.signal;
+                controller&&controller.abort();
+
+                controller = new AbortController();
+                const signal = controller.signal;
                 
-                //request general data about all movies
-                data = await fetch(`http://www.omdbapi.com/?type=movie&apikey=dfe51d16&s=${this.lastRequest}`, {signal})
+                
+                data = await fetch(`http://www.omdbapi.com/?type=movie&apikey=dfe51d16&s=${lastRequest}`, {signal})
                             .then( res => {
-                                this.controller, this.lastRequest = null;
+                                controller, lastRequest = null;
                                 return res.json()
                             })
                             .catch(err => {
                                 if (err.name !== 'AbortError') console.log(err.message);
                             });
 
-                //check if aborted
                 if (signal.aborted){
-                    this.controller = null;
-                    console.log(`aborted ${request}`)
+                    controller = null;
                     return;
                 }
-
-                //request additional data(genre, rating, etc)
                 
-                data = await this.getFullData(data);
+                data = await getFullData(data);
             
-                this.cache.set(request, data);
+                cache.set(request, data);
             }
 
             if (!data.Response === 'True') throw new Error(`Error: ${data.status} ${data.statusText}`);
@@ -94,14 +90,14 @@ class Model{
                 loading:false
             };
 
-            this.setState(newState);
+            setState(newState);
 
         } catch (err) {
-            this.setState({error: true});
+            setState({error: true});
         }
     }
 
-    async getFullData(data){
+    async function getFullData(data){
         let counter = 0;
         for (let movie of data.Search){
             data.Search[counter++] = await fetch(`http://www.omdbapi.com/?apikey=dfe51d16&t=${movie.Title}`).then(res => res.json());
@@ -109,11 +105,18 @@ class Model{
         return data;
     }
 
-    removeTag(targetTag){
-        const curState = this.getState();
-        this.setState({
+    function removeTag(targetTag){
+        const curState = getState();
+        setState({
             tags: curState.tags.filter( tag => tag!==targetTag)
         })
+    }
+
+    return {
+        init,
+        addListener,
+        getMoviesData,
+        removeTag
     }
 
 }
