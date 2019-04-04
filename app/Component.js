@@ -24,12 +24,9 @@ function createComponent(connector){
             connector.notify({event: 'search', data: search.value});
         };
 
-        /*
-        изначально ограничивал поиск по инпуту вот так:
+        
 
-        searchHandler = debounce(searchHandler, 1000);
-
-        */ 
+        searchHandler = debounce(searchHandler, 200);
 
         search.addEventListener('focus', () => el.classList.add('search_active'));
         search.addEventListener('blur', () => {
