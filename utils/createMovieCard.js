@@ -1,7 +1,7 @@
 const movieTempl = document.createElement('template');
 movieTempl.classList.add('movie-template');
 movieTempl.innerHTML = `
-<a class = result>
+<a class = result target="_blank">
   <div class="result__data ">
       <div class = "result__rate"></div>
       <h3 class="result__name "></h3>
