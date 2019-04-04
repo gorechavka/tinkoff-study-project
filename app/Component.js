@@ -6,9 +6,9 @@ function createComponent(connector){
         history = document.querySelector('.search-box__history'),
         results = document.querySelector('.results'),
         eventHandlers = [onSearch, onScroll, onTagClick, onKeyDown, onClear],
-        preloader = null,
-        cardsContainer = null,
-        header = null;
+        preloader,
+        cardsContainer,
+        header;
     
     function init(){
         initEvents();
@@ -103,7 +103,7 @@ function createComponent(connector){
     function hidePreloader(){
         if (preloader) {
             preloader.remove();
-            preloader = null;
+            preloader = undefined;
         }
     }
 

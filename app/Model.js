@@ -5,8 +5,7 @@ function createModel(){
         cache = new Map(),
         apikey = 'dfe51d16',
         url = `http://www.omdbapi.com/`,
-        controller = null,
-        lastRequest = null;
+        controller;
 
     function init(){
         if (localStorage.getItem('lastState')) {
@@ -45,17 +44,15 @@ function createModel(){
         try {
             if (cache.has(request)) data = await cache.get(request);
             else {
-                lastRequest = request;
-
                 controller&&controller.abort();
 
                 controller = new AbortController();
                 const signal = controller.signal;
                 
                 
-                data = await fetch(`${url}?apikey=${apikey}&type=movie&s=${lastRequest}`, {signal})
+                data = await fetch(`${url}?apikey=${apikey}&type=movie&s=${request}`, {signal})
                             .then( res => {
-                                controller, lastRequest = null;
+                                controller = undefined;
                                 return res.json()
                             })
                             .catch(err => {
@@ -63,7 +60,7 @@ function createModel(){
                             });
 
                 if (signal.aborted){
-                    controller = null;
+                    controller = undefined;
                     return;
                 }
                 
