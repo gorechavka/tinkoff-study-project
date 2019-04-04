@@ -51,16 +51,13 @@ function createModel(){
                 
                 
                 data = await fetch(`${url}?apikey=${apikey}&type=movie&s=${request}`, {signal})
-                            .then( res => {
-                                controller = undefined;
-                                return res.json()
-                            })
+                            .then( res => res.json())
                             .catch(err => {
                                 if (err.name !== 'AbortError') console.log(err.message);
-                            });
+                            })
+                            .finally(() => controller = undefined);
 
                 if (signal.aborted){
-                    controller = undefined;
                     return;
                 }
                 
