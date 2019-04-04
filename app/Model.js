@@ -3,6 +3,8 @@ function createModel(){
     let state = {},
         listeners = [],
         cache = new Map(),
+        apikey = 'dfe51d16',
+        url = `http://www.omdbapi.com/`,
         controller = null,
         lastRequest = null;
 
@@ -25,24 +27,19 @@ function createModel(){
      
         listeners.forEach( listener => listener(newState));
 
-        state = Object.assign({}, state, newState);
+        state = {...state, ...newState};
         if (!state.error && !state.loading){
 
-            
             localStorage.clear();
-            localStorage.setItem('lastState', JSON.stringify(getState()));
+            localStorage.setItem('lastState', JSON.stringify(state));
         }
-    }
-
-    function getState(){
-        return state;
     }
 
     async function getMoviesData(request) {
 
         setState({loading: true});
 
-        const curState = getState();
+        const curState = state;
         let data;
 
         try {
@@ -56,7 +53,7 @@ function createModel(){
                 const signal = controller.signal;
                 
                 
-                data = await fetch(`http://www.omdbapi.com/?type=movie&apikey=dfe51d16&s=${lastRequest}`, {signal})
+                data = await fetch(`${url}?apikey=${apikey}&type=movie&s=${lastRequest}`, {signal})
                             .then( res => {
                                 controller, lastRequest = null;
                                 return res.json()
@@ -70,7 +67,7 @@ function createModel(){
                     return;
                 }
                 
-                data = await getFullData(data);
+                data.Search = await getFullData(data.Search);
             
                 cache.set(request, data);
             }
@@ -97,17 +94,14 @@ function createModel(){
             setState({error: true});
         }
     }
-
+    
     async function getFullData(data){
-        let counter = 0;
-        for (let movie of data.Search){
-            data.Search[counter++] = await fetch(`http://www.omdbapi.com/?apikey=dfe51d16&t=${movie.Title}`).then(res => res.json());
-        }
-        return data;
+        let requests = data.map( movie => fetch(`${url}?apikey=${apikey}&t=${movie.Title}`).then(res => res.json()));
+        return await Promise.all(requests);
     }
 
     function removeTag(targetTag){
-        const curState = getState();
+        const curState = state;
         setState({
             tags: curState.tags.filter( tag => tag!==targetTag)
         })
