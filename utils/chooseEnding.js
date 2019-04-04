@@ -1,3 +1,4 @@
+'use strict'
 const chooseEnding = (num) => {
   if (Math.round(num%100/10)===1) return 'фильмов'
   switch (num%10){

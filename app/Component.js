@@ -1,3 +1,4 @@
+'use strict'
 function createComponent(connector){
     
     let el = document.querySelector('.main'),

@@ -1,3 +1,4 @@
+'use strict'
 const movieTempl = document.createElement('template');
 movieTempl.classList.add('movie-template');
 movieTempl.innerHTML = `

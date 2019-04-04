@@ -1,3 +1,4 @@
+'use strict'
 function createPreloader(){
     const template = `
     <style>

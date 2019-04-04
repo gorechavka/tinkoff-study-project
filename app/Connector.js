@@ -1,3 +1,4 @@
+'use strict'
 function createConnector(model){
     let actions = {},
         subscribers = {};

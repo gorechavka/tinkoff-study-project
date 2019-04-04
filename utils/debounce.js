@@ -1,3 +1,4 @@
+'use strict'
 function debounce(func, ms){
     let timer = null;
     return function debouncedFunc(...args){

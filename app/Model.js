@@ -1,9 +1,10 @@
+'use strict'
 function createModel(){
-    state = {};
-    listeners = [];
-    cache = new Map(),
-    controller = null,
-    lastRequest = null;
+    let state = {},
+        listeners = [],
+        cache = new Map(),
+        controller = null,
+        lastRequest = null;
 
     function init(){
         if (localStorage.getItem('lastState')) {
