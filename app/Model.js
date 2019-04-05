@@ -68,6 +68,7 @@ function createModel(){
 
             if (!data.Response === 'True') throw new Error(`Error: ${data.status} ${data.statusText}`);
             const newState = {
+                request,
                 tags: [request,...curState.tags.filter( tag => tag!==request )],
                 counts: data.totalResults,
                 moviesData: data.Search.map(movie => ({

@@ -13,6 +13,7 @@ function init(){
     connector.subscribe({update: 'moviesData', handler: component.renderCards});
     connector.subscribe({update: 'counts', handler: component.renderResultsHeader});
     connector.subscribe({update: 'error', handler: component.renderError});
+    connector.subscribe({update: 'request', handler: component.renderSearchLine})
 
     connector.init();
 }

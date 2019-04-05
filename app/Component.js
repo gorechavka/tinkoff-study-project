@@ -104,6 +104,11 @@ function createComponent(connector){
         }
     }
 
+
+    function renderSearchLine(request){
+        search.value = request;
+    }
+
     function renderCards(moviesData){
         const container = document.createDocumentFragment();
 
@@ -183,6 +188,7 @@ function createComponent(connector){
     return {
         showPreloader,
         hidePreloader,
+        renderSearchLine,
         renderCards,
         renderResultsHeader,
         renderTags,
